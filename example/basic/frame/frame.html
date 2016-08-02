@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FRAME</title>
+    <style>
+        .inline {
+            display: inline-block;
+        }
+    </style>
+    <script src="bundle.js"></script>
+    <script>
+
+        window.addEventListener('DOMContentLoaded', function () {
+
+            window.frameListener = new FrameListener();
+
+            // onLoad event
+            frameListener.on('load', function () {
+
+                // set starter width and height for frame
+                frameListener.style({width: '100%', height: '300px'});
+            });
+        });
+    </script>
+</head>
+<body style="border: 1px solid #212121;">
+    <h1>FRAME CONTENT</h1>
+</body>
+</html>

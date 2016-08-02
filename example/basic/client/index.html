@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .inline {
+            display: inline-block;
+        }
+    </style>
+    <script src="bundle.js"></script>
+</head>
+<body style="border: 1px solid #212121;">
+<div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+
+            new FrameLoader({
+                url: '../frame/frame.html',
+                el: '#frameContainer'
+            });
+        });
+
+    </script>
+
+    <div id="frameContainer"></div>
+</div>
+</body>
+</html>

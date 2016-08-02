@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .inline {
+            display: inline-block;
+        }
+    </style>
+    <!--<script src="../../../requirejs-2.1.9.js"></script>-->
+</head>
+<body style="border: 1px solid #212121;">
+<div>
+
+    <script>
+        // callback function for bundle.js onload event
+        window.productAPICallBack = function (ProductAPI) {
+
+            // init Product
+            window.product = ProductAPI.init({
+                el: '#frameContainer'
+            });
+
+            // incoming message from frame
+            window.product.on('message', function (data) {
+                document.querySelector('#inbox').innerHTML = (data.message || '');
+            });
+
+            // incoming message with type
+            window.product.on('message:typeName', function (data) {
+                document.querySelector('#typedInbox').innerHTML = (data.message || '');
+            });
+
+            // sending message to frame
+            document.querySelector('#simpleForm').onsubmit = function (event) {
+                event.preventDefault();
+
+                var message = document.querySelector('[name="simpleQuery"]').value;
+
+                window.product.send({message: message});
+            };
+        };
+
+        // bundle loader
+        (function (d, id) {
+            var js,
+                head = d.querySelector('head'),
+                refEl = head.children[(head.children.length - 1)];
+
+            js = d.createElement('script');
+            if (id) { js.id = id; }
+            js.src = "bundle.js";
+            head.insertBefore(js, refEl);
+        })(document);
+    </script>
+
+    <div class="inline" style="margin: 18px; border:1px solid #dddddd; padding: 9px; vertical-align: top;">
+        <h3>Отправка сообщений фрейму</h3>
+        <div>
+            <form method="post" action="/" id="simpleForm">
+                <input type="text" name="simpleQuery" placeholder="Текст сообщения"/>
+                <input type="submit" value="Send"/>
+            </form>
+        </div>
+    </div>
+    <div class="inline" style="margin: 18px; border:1px solid #dddddd; padding: 9px; vertical-align: top;">
+        <h3>Входящие сообщения от фрейма</h3>
+        <div id="inbox"></div>
+    </div>
+    <div class="inline" style="margin: 18px; border:1px solid #dddddd; padding: 9px; vertical-align: top;">
+        <h3>Входящие сообщения с типом typeName</h3>
+        <div id="typedInbox"></div>
+    </div>
+
+    <div id="frameContainer"></div>
+</div>
+</body>
+</html>
