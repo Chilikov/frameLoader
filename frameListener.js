@@ -68,7 +68,7 @@
 
                     this.send({type: '__initSuccess'});
 
-                } else {
+                } else if (this.id === data.id) {
 
                     // run onMessage callback
                     if (typeof this.options.onMessage === 'function') {

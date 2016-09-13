@@ -61,14 +61,6 @@
             frame.onload = function() {
                 // send init message for loaded frame
                 this._frameInteractive();
-
-                // onLoad callback
-                if (typeof this.options.onLoad === 'function') {
-                    this.options.onLoad(this.frame);
-                }
-
-                // onload event
-                this.trigger('load', this.frame);
                 window.addEventListener("message", this._onMessage.bind(this));
 
             }.bind(this);
@@ -106,6 +98,14 @@
 
             if (data.type === '__initSuccess') {
                 this.initSuccess = true;
+
+                // onLoad callback
+                if (typeof this.options.onLoad === 'function') {
+                    this.options.onLoad(this.frame);
+                }
+
+                // onload event
+                this.trigger('load', this.frame);
                 return this;
             }
 
