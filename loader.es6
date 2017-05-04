@@ -1,10 +1,20 @@
-(function (root, factory) {
+(function (name, root, factory) {
+
     if (typeof define === 'function' && define.amd) {
-        define('FrameLoader', [], function () { return factory(root); });
+        define(name, ['FL_EventEmitter'], function (EventEmitter) {
+            return factory(root, EventEmitter);
+        });
+    } else if ((typeof module !== 'undefined') && module.exports !== undefined) {
+        module.exports = factory(root);
     } else {
-        root.FrameLoader = factory(root);
+        root[name] = factory(root, root.FL_EventEmitter);
     }
-})(window, function (window) {
+
+})('FL_Loader', (window || module || {}), function (window, EventEmitter) {
+
+    if (typeof module !== 'undefined' && module.exports) {
+        EventEmitter = require('./eventEmitter');
+    }
 
     /**
      * Class for managing, loading and listening frame
@@ -13,27 +23,26 @@
      * @param options.el - DOM Selector or HTMLElement of frame container
      * @constructor
      */
-    var FrameLoader = function (options) {
-        options = options || {};
+    class Loader extends EventEmitter {
+        constructor(opts = {}) {
+            super();
+            this.options = opts;
 
-        this.options = options;
+            if (!this.options.url) {
+                return console.warn('FrameLoader: error missed frame URL');
+            }
 
-        if (!this.options.url) {
-            return console.log('FrameLoader: error missed frame URL');
+            if (!this.options.el) {
+                return console.warn('FrameLoader: error missed frame container');
+            }
+
+            if (document.readyState === 'interactive' || document.readyState === 'complete') {
+                this._initFrame();
+            }
         }
 
-        if (!this.options.el) {
-            return console.log('FrameLoader: error missed frame container');
-        }
-
-        if (document.readyState === 'interactive' || document.readyState === 'complete') {
-            this._initFrame();
-        }
-    };
-
-    FrameLoader.prototype = {
         // preparing frame options
-        _initFrame: function () {
+        _initFrame() {
             var el;
 
             if (this.options.el instanceof HTMLElement) {
@@ -50,45 +59,44 @@
             this.id = this.options.id || ('frame' + this.options.url);
 
             this._loadFrame();
-        },
+
+            return this;
+        }
 
         // loads frame
-        _loadFrame: function () {
+        _loadFrame() {
             var frame;
 
             frame = this.frame = document.createElement('iframe');
 
-            frame.onload = function() {
+            frame.onload = () => {
                 // send init message for loaded frame
                 this._frameInteractive();
                 window.addEventListener("message", this._onMessage.bind(this));
-
-            }.bind(this);
+            };
 
             frame.src = this.options.url;
             frame.setAttribute('frameborder', 0);
             frame.setAttribute('scrolling', 'no');
             frame.style.backgroundColor = 'transparent';
             this.el.appendChild(frame);
-        },
+        }
 
         // first message which will be send to frame
         // contains special type: 'init' and unique ID in options
-        _frameInteractive: function() {
-            var initInterval = setInterval(function () {
+        _frameInteractive() {
+            var initInterval = setInterval(() => {
                 if (this.initSuccess) {
                     clearInterval(initInterval);
 
                 } else {
-                    this.send(Object.assign(this.options, {type: '__init'}));
+                    this.send(Object.assign({type: '__init', id: this.id}));
                 }
-            }.bind(this), 50);
-        },
+            }, 50);
+        }
 
         // message listener
-        _onMessage: function (event) {
-            event = event || {};
-
+        _onMessage(event = {}) {
             var data = event.data || {},
                 messageType = 'message';
 
@@ -126,11 +134,10 @@
 
             // emit message event
             this.trigger(messageType, data, event);
-        },
+        }
 
         // update frame CSS styling if a style property was passed in postMessage
-        _updateStyle: function (style) {
-            style = style || {};
+        _updateStyle(style = {}) {
             var prop;
 
             for (prop in style) {
@@ -138,14 +145,11 @@
                     this.frame.style[prop] = style[prop];
                 }
             }
-        },
+        }
 
         // postMessage wrapper
         // method for sending messages into frame
-        send: function (data, options) {
-            options = options || {};
-            data = data || {};
-
+        send(data = {}, options = {}) {
             data = Object.assign({}, data, {id: this.id});
 
             if (this.frame) {
@@ -153,28 +157,23 @@
             }
 
             return this;
-        },
+        }
 
         // show frame
-        show: function () {
+        show() {
             if (this.el) {
                 this.el.style.display = this.elDisplayType || 'block';
             }
-        },
+        }
 
         // hide frame
-        hide: function () {
+        hide() {
             if (this.el) {
                 this.elDisplayType = this.el.style.display || 'block';
                 this.el.style.display = 'none';
             }
         }
-    };
-
-    if (window._frameLoaderEE) {
-        Object.assign(FrameLoader.prototype, window._frameLoaderEE);
     }
 
-
-    return FrameLoader;
+    return Loader;
 });

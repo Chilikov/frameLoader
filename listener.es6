@@ -1,35 +1,42 @@
-(function (root, factory) {
+(function (name, root, factory) {
+
     if (typeof define === 'function' && define.amd) {
-        define('FrameListener', [], function () { return factory(root); });
+        define(name, ['FL_EventEmitter'], function (EventEmitter) {
+            return factory(root, EventEmitter);
+        });
+    } else if ((typeof module !== 'undefined') && module.exports !== undefined) {
+        module.exports = factory(root);
     } else {
-        root.FrameListener = factory(root);
+        root[name] = factory(root, root.FL_EventEmitter);
     }
-})(window, function (window) {
+
+})('FL_Listener', (window || module || {}), function (window, EventEmitter) {
+
+    if (typeof module !== 'undefined' && module.exports) {
+        EventEmitter = require('./eventEmitter');
+    }
 
     /**
      * Class for manage messages from parent window
      * @param options
      * @constructor
      */
-    var FrameListener = function (options) {
-        options = options || {};
+    class Listener extends EventEmitter {
 
-        this.options = options;
+        constructor(opts = {}) {
+            super();
+            this.options = opts;
 
-        // if current window are embed to some other window
-        // lister for messages
-        if (window.parent !== window) {
-            this._listen();
+            // if current window are embed to some other window
+            // lister for messages
+            if (window.parent !== window) {
+                this._listen();
+            }
         }
-    };
-
-    FrameListener.prototype = {
 
         // postMessage wrapper
         // method for sending messages into parent window
-        send: function (data, options) {
-            options = options || {};
-            data = data || {};
+        send(data = {}, options = {}) {
 
             data = Object.assign({}, data, {id: this.id});
 
@@ -38,25 +45,26 @@
             }
 
             return this;
-        },
+        }
 
         // shorthand method for sending style properties to parent window
         // which will be processed by FrameLoader
-        style: function (style) {
-            style = style || {};
-
+        style(style = {}) {
             this.send({style: style});
-        },
+        }
 
         // event listener
-        _listen: function () {
-            window.addEventListener("message", function (e) {
+        _listen() {
+            window.addEventListener("message", e => {
                 var data = e.data || {},
                     messageType = 'message';
 
                 if (data.type === '__init') {
                     // process init message and save unique ID of frame
                     this.id = data.id;
+
+                    // confirm connection
+                    this.send({type: '__initSuccess'});
 
                     // run onLoad callback
                     if (typeof this.options.onLoad === 'function') {
@@ -65,8 +73,6 @@
 
                     // emit load event
                     this.trigger('load');
-
-                    this.send({type: '__initSuccess'});
 
                 } else if (this.id === data.id) {
 
@@ -84,13 +90,9 @@
                     this.trigger(messageType, data, e);
                 }
 
-            }.bind(this));
+            });
         }
-    };
-
-    if (window._frameLoaderEE) {
-        Object.assign(FrameListener.prototype, window._frameLoaderEE);
     }
 
-    return FrameListener;
+    return Listener;
 });
