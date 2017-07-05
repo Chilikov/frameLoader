@@ -8,23 +8,30 @@
             display: inline-block;
         }
     </style>
-    <script src="bundle.js"></script>
+    <script src="../../../build/frameLoader.min.js"></script>
     <script>
 
         window.addEventListener('DOMContentLoaded', function () {
 
-            window.frameListener = new FrameListener();
+            var listener = new FrameLoader.Listener();
 
             // onLoad event
-            frameListener.on('load', function () {
+            listener.on('load', function () {
 
                 // set starter width and height for frame
-                frameListener.style({width: '100%', height: '300px'});
+                listener.style({width: '100%', height: '300px'});
+            });
+
+            listener.on('message:chat', function (data) {
+                document.querySelector('#content').innerHTML = 'Frame received "' + data.text + '"';
+
+                listener.send({text: 'thanks for ' + data.text, type: 'chat'});
             });
         });
     </script>
 </head>
 <body style="border: 1px solid #212121;">
-    <h1>FRAME CONTENT</h1>
+    <h1>FRAME</h1>
+    <p id="content"></p>
 </body>
 </html>

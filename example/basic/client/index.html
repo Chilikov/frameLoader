@@ -2,28 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>FrameLoader</title>
     <style>
         .inline {
             display: inline-block;
         }
     </style>
-    <script src="bundle.js"></script>
+    <script src="../../../build/frameLoader.min.js"></script>
 </head>
-<body style="border: 1px solid #212121;">
+<body style="border: 1px solid #212121; padding: 18px;">
 <div>
 
     <script>
         window.addEventListener('DOMContentLoaded', function () {
 
-            new FrameLoader({
+            var loader = new FrameLoader.Loader({
                 url: '../frame/frame.html',
                 el: '#frameContainer'
+            });
+
+            loader.on('load', function () {
+                document.querySelector('#status').innerHTML = 'Frame is loaded';
+            });
+
+            loader.on('message', function (data) {
+                document.querySelector('#callback').innerHTML = 'Last message is: ' + JSON.stringify(data);
+            });
+
+            loader.on('message:chat', function (data) {
+                document.querySelector('#callbackChat').innerHTML = 'Parent received "' + data.text + '"';
+            });
+
+            document.querySelector('#send').addEventListener('click', function (e) {
+                var message = document.querySelector('[name="message"]').value.trim();
+
+                if (message) {
+                    loader.send({text: message, type: 'chat'});
+                }
             });
         });
 
     </script>
 
+    <h1>PARENT</h1>
+    <p><input type="text" name="message" value="" /><button type="button" id="send">Send</button></p>
+    <p id="status"></p>
+    <p id="callback"></p>
+    <p id="callbackChat"></p>
     <div id="frameContainer"></div>
 </div>
 </body>
