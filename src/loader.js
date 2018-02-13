@@ -9,6 +9,7 @@ import EventEmitter from './eventEmitter';
 export default class extends EventEmitter {
     constructor(opts = {}) {
         super();
+
         this.options = opts;
 
         if (!this.options.url) {
@@ -26,7 +27,7 @@ export default class extends EventEmitter {
 
     // preparing frame options
     _initFrame() {
-        var el;
+        let el;
 
         if (this.options.el instanceof HTMLElement) {
             this.el = this.options.el;
@@ -48,7 +49,7 @@ export default class extends EventEmitter {
 
     // loads frame
     _loadFrame() {
-        var frame;
+        let frame;
 
         frame = this.frame = document.createElement('iframe');
 
@@ -68,7 +69,7 @@ export default class extends EventEmitter {
     // first message which will be send to frame
     // contains special type: 'init' and unique ID in options
     _frameInteractive() {
-        var initInterval = setInterval(() => {
+        let initInterval = setInterval(() => {
             if (this.initSuccess) {
                 clearInterval(initInterval);
 
@@ -80,10 +81,10 @@ export default class extends EventEmitter {
 
     // message listener
     _onMessage(event = {}) {
-        var data = event.data || {},
+        let data = event.data || {},
             messageType = 'message';
 
-        if (!data.id || data.id !== this.id) {
+        if (!data.id || data.id !== this.id || event.source || event.source !== this.frame.contentWindow) {
             return this;
         }
 
@@ -107,7 +108,7 @@ export default class extends EventEmitter {
 
         // onMessage callback
         if (typeof this.options.onMessage === 'function') {
-            this.options.onMessage(data);
+            this.options.onMessage(data, event);
         }
 
         // emit event with type
@@ -121,13 +122,17 @@ export default class extends EventEmitter {
 
     // update frame CSS styling if a style property was passed in postMessage
     _updateStyle(style = {}) {
-        var prop;
+        let prop;
 
         for (prop in style) {
             if (style.hasOwnProperty(prop)) {
                 this.frame.style[prop] = style[prop];
             }
         }
+    }
+
+    getFrame() {
+        return this.frame;
     }
 
     // postMessage wrapper

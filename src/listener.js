@@ -40,7 +40,7 @@ export default class extends EventEmitter {
     // event listener
     _listen() {
         window.addEventListener("message", e => {
-            var data = e.data || {},
+            let data = e.data || {},
                 messageType = 'message';
 
             if (data.type === '__init') {
@@ -62,7 +62,7 @@ export default class extends EventEmitter {
 
                 // run onMessage callback
                 if (typeof this.options.onMessage === 'function') {
-                    this.options.onMessage(data);
+                    this.options.onMessage(data, e);
                 }
 
                 // emit typed message
