@@ -84,7 +84,7 @@ export default class extends EventEmitter {
         let data = event.data || {},
             messageType = 'message';
 
-        if (!data.id || data.id !== this.id || event.source || event.source !== this.frame.contentWindow) {
+        if (!data.id || data.id !== this.id || event.source !== this.frame.contentWindow) {
             return this;
         }
 
