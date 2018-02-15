@@ -62,6 +62,8 @@ export default class extends EventEmitter {
         frame.src = this.options.url;
         frame.setAttribute('frameborder', 0);
         frame.setAttribute('scrolling', 'no');
+        frame.setAttribute('width', '100%');
+        frame.setAttribute('height', '0');
         frame.style.backgroundColor = 'transparent';
         this.el.appendChild(frame);
     }
